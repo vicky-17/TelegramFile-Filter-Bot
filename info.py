@@ -99,7 +99,7 @@ MULTI_CLIENT = False
 SLEEP_THRESHOLD = 60
 PING_INTERVAL = 1200
 ON_HEROKU = False
-URL = "https://telegram-streaming-bot-vicky.koyeb.app/"
+URL = "https://telegram-streaming-bot-vicky17-5ba81cfa.koyeb.app/"
 
 
 
