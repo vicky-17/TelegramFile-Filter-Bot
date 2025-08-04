@@ -99,7 +99,7 @@ MULTI_CLIENT = False
 SLEEP_THRESHOLD = 60
 PING_INTERVAL = 1200
 ON_HEROKU = False
-URL = "http://localhost:8080/"
+URL = "https://telegram-streaming-bot-vicky.koyeb.app/"
 
 
 
