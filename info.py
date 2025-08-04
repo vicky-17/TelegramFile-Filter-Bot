@@ -17,8 +17,8 @@ def is_enabled(value, default):
 SESSION = "Media_search"
 API_ID = 23884743
 API_HASH = "b8c26efa0bc0e98f306094ca676165d2"
-BOT_TOKEN ="8028660473:AAENZCKMwOOpp-LIglNF0rJbUcvfGgAGKpE" 
-#"8028660473:AAENZCKMwOOpp-LIglNF0rJbUcvfGgAGKpE"
+#BOT_TOKEN ="8216289057:AAF-ciONTLn3fjMBrAM3wS_NYOu4Y5gPfoE" #Backup bot @FilmyswapMoviesBot
+BOT_TOKEN="6440636978:AAEZWjxQFM0ul9_-jGJ50ogZJhp-aKPqzhQ"
 PORT = "8082"
 
 ADMINS = [6216066502]
@@ -38,16 +38,16 @@ DATABASE_NAME = "captions_db2"
 FILES_DATABASE = DATABASE_URI
 COLLECTION_NAME = "Vicky"
 
-SUPPORT_GROUP = -1002675357996
+SUPPORT_GROUP = -1002655023543
 DELETE_CHANNELS = 0
 request_channel = "-1002678650823"
 REQUEST_CHANNEL = int(request_channel) if id_pattern.search(request_channel) else None
-MOVIE_UPDATE_CHANNEL = -1001864434358
+MOVIE_UPDATE_CHANNEL = -1002358925714
 
-SUPPORT_CHAT = "-1002675357996" # this variable was not used in the code !!
+SUPPORT_CHAT = "-1002655023543" # this variable was not used in the code !!
 MOVIE_GROUP_LINK = "https://t.me/+Rh6MeSC3FkhhOTRl"
 
-IS_VERIFY = True
+IS_VERIFY = False
 
 TUTORIAL = "https://t.me/"
 TUTORIAL_2 = "https://t.me/"
@@ -82,7 +82,7 @@ AUTO_FILTER = True
 IS_PM_SEARCH = True
 IS_SEND_MOVIE_UPDATE = True
 MAX_BTN = 8
-AUTO_DELETE = False
+AUTO_DELETE = True
 DELETE_TIME = 1200
 FILE_AUTO_DEL_TIMER = None
 IMDB = False
@@ -95,7 +95,7 @@ LINK_MODE = True
 TMDB_API_KEY = ""
 STREAM_MODE = True
 
-MULTI_CLIENT = False
+MULTI_CLIENT = True
 SLEEP_THRESHOLD = 60
 PING_INTERVAL = 1200
 ON_HEROKU = False
