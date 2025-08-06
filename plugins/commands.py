@@ -177,11 +177,9 @@ async def start(client: Client, message):
             ]
         ]
         reply_markup = InlineKeyboardMarkup(buttons)
-        m = await message.reply_sticker(
-            "CAACAgUAAx0CZz_GMwACMBdnXZA4SejgJ6a_0TrNzOfn9ImI_QACNwsAArT4iFVaZPJf8ldVVh4E"
-        )
-        await asyncio.sleep(1)
-        await m.delete()
+        m = await message.reply_sticker(random.choice(START_STICKER_ID))
+
+        
         await message.reply_photo(
             photo=random.choice(START_IMG),
             caption=script.START_TXT.format(
@@ -190,7 +188,10 @@ async def start(client: Client, message):
             reply_markup=reply_markup,
             parse_mode=enums.ParseMode.HTML,
         )
+        await asyncio.sleep(5)
+        await m.delete()
         return
+        
     if len(message.command) == 2 and message.command[1] in [
         "subscribe",
         "error",
@@ -1588,5 +1589,6 @@ async def reset_group_command(client, message):
     reply_markup = InlineKeyboardMarkup(btn)
     await save_default_settings(grp_id)
     await message.reply_text("ꜱᴜᴄᴄᴇꜱꜱғᴜʟʟʏ ʀᴇꜱᴇᴛ ɢʀᴏᴜᴘ ꜱᴇᴛᴛɪɴɢꜱ...")
+
 
 
