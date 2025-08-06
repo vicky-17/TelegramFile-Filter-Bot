@@ -1419,9 +1419,9 @@ async def refer(bot, message):
         ]
     ]
     m = await message.reply_sticker(
-        "CAACAgQAAxkBAAEkt_Rl_7138tgHJdEsqSNzO5mPWioZDgACGRAAAudLcFGAbsHU3KNJUx4E"
+        "CAACAgIAAxkBDUQ972iTlk_KuXnfTdrLeUnorRCVWd0AA9UFAAI_lcwK9BVdrvOW_Cg2BA"
     )
-    await m.delete()
+    await asyncio.sleep(2)
     reply_markup = InlineKeyboardMarkup(btn)
     await message.reply_photo(
         photo=random.choice(REFER_PICS),
@@ -1429,6 +1429,8 @@ async def refer(bot, message):
         reply_markup=reply_markup,
         parse_mode=enums.ParseMode.HTML,
     )
+    await asyncio.sleep(5)
+    await m.delete()
 
 
 @Client.on_message(filters.private & filters.command("pm_search_on"))
@@ -1586,4 +1588,5 @@ async def reset_group_command(client, message):
     reply_markup = InlineKeyboardMarkup(btn)
     await save_default_settings(grp_id)
     await message.reply_text("ꜱᴜᴄᴄᴇꜱꜱғᴜʟʟʏ ʀᴇꜱᴇᴛ ɢʀᴏᴜᴘ ꜱᴇᴛᴛɪɴɢꜱ...")
+
 
