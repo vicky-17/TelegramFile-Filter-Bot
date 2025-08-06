@@ -77,6 +77,15 @@ PAYPICS = ["https://ibb.co/YBSqKK3J"] #["https://graph.org/file/f4db1c3ad3d9e38b
 SUBSCRIPTION="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExb2trajF5eThxN2h5d2kzaXl6aTZ5MWhpbWEya2doNjBnbGtvMnZiYiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/PnoQLaOLYp93ebw382/giphy.gif"#
 
 REACTIONS = ["👀", "😱", "🔥", "😍", "🎉", "🥰", "😇", "⚡"]
+START_STICKER_ID=["CAACAgEAAxkBDUQslWiTkD49Ni1EqyhUxWGwMYrpDWJuAALBAQACbdJQRUHYYW_kG1PNNgQ",
+               "CAACAgUAAx0CZz_GMwACMBdnXZA4SejgJ6a_0TrNzOfn9ImI_QACNwsAArT4iFVaZPJf8ldVVh4E",
+               "CAACAgEAAxkBDUQsoWiTkEOkcFKgS6tBSvuie8pMt1WgAALBAgACwe4hRMlWvZyd07lbNgQ",
+               "CAACAgUAAxkBDURG1miTmcSLoXM6amyuAAHJCsF_2YhIJAACPgkAAs4vkVVp-07Hcmam-zYE",
+               "CAACAgUAAxkBDURG12iTmca6N4MwrCPdBj6Yg8jMfTNlAAIZCAACTyTJVg0m-XQjRkvJNgQ",
+               "CAACAgIAAxkBDUQvI2iTkS9MlTvJ6cZCNcttmM6GcPbNAAK-BQACP5XMCpuPAohdSwctNgQ",
+               "CAACAgIAAyEFAASg-nN3AAIN8miTaViPlbam-d-uHSTLfVENdxpLAALTBQACP5XMCp9au9JdR8cxNgQ",
+               "CAACAgIAAxkBDUQq6GiTj51SX_MZbrk6BwbZ2Q3A_gqiAAKOFQACJU3BSY8WTX7r0TbzNgQ",
+               ]
 
 AUTO_FILTER = True
 IS_PM_SEARCH = True
