@@ -177,6 +177,7 @@ async def start(client: Client, message):
             ]
         ]
         reply_markup = InlineKeyboardMarkup(buttons)
+
         m = await message.reply_sticker(random.choice(START_STICKER_ID))
 
         
@@ -192,6 +193,8 @@ async def start(client: Client, message):
         await m.delete()
         return
         
+    
+
     if len(message.command) == 2 and message.command[1] in [
         "subscribe",
         "error",
@@ -1425,12 +1428,12 @@ async def refer(bot, message):
     await asyncio.sleep(2)
     reply_markup = InlineKeyboardMarkup(btn)
     await message.reply_photo(
-        photo=random.choice(REFER_PICS),
-        caption=f"👋Hey {message.from_user.mention},\n\nHᴇʀᴇ ɪꜱ ʏᴏᴜʀ ʀᴇғғᴇʀᴀʟ ʟɪɴᴋ:\n Click To Copy \n<code>https://telegram.dog/{bot.me.username}?start=reff_{message.from_user.id}</code>\n\nShare this link with your friends, Each time they join,  you will get 10 refferal points and after 100 points you will get 1 month premium subscription.",
+        photo=REFER_PICS,
+        caption=f"👋Hey {message.from_user.mention},\n\nHᴇʀᴇ ɪꜱ ʏᴏᴜʀ ʀᴇғғᴇʀᴀʟ ʟɪɴᴋ:\n <blockquote>🍁<b>(Click To Copy)</b>👇</blockquote> 🔗<code>https://telegram.dog/{bot.me.username}?start=reff_{message.from_user.id}</code>\n\n♻️ Sʜᴀʀᴇ ᴛʜɪꜱ ʟɪɴᴋ ᴡɪᴛʜ ʏᴏᴜʀ ғʀɪᴇɴᴅꜱ, Eᴀᴄʜ ᴛɪᴍᴇ ᴛʜᴇʏ ɪᴏɪɴ,  ʏᴏᴜ ᴡɪʟʟ ɢᴇᴛ 𝟷𝟶 ʀᴇғғᴇʀᴀʟ ᴘᴏɪɴᴛꜱ ᴀɴᴅ ᴀғᴛᴇʀ 𝟷𝟶𝟶 ᴘᴏɪɴᴛꜱ ʏᴏᴜ ᴡɪʟʟ ɢᴇᴛ 𝟷 ᴍᴏɴᴛʜ ᴘʀᴇᴍɪᴜᴍ ꜱᴜʙꜱᴄʀɪᴘᴛɪᴏɴ.",
         reply_markup=reply_markup,
         parse_mode=enums.ParseMode.HTML,
     )
-    await asyncio.sleep(5)
+    await asyncio.sleep(10)
     await m.delete()
 
 
@@ -1589,6 +1592,3 @@ async def reset_group_command(client, message):
     reply_markup = InlineKeyboardMarkup(btn)
     await save_default_settings(grp_id)
     await message.reply_text("ꜱᴜᴄᴄᴇꜱꜱғᴜʟʟʏ ʀᴇꜱᴇᴛ ɢʀᴏᴜᴘ ꜱᴇᴛᴛɪɴɢꜱ...")
-
-
-
