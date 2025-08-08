@@ -71,7 +71,7 @@ SEASONS = [f"season {i}" for i in range(1, 23)]
 #https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExb2trajF5eThxN2h5d2kzaXl6aTZ5MWhpbWEya2doNjBnbGtvMnZiYiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/PnoQLaOLYp93ebw382/giphy.gif"
 START_IMG = ["https://ibb.co/mrfjj8KW"]
 FORCESUB_IMG = "https://i.ibb.co/ZNC1Hnb/ad3f2c88a8f2.jpg"
-REFER_PICS = ["https://graph.org/file/1a2e64aee3d4d10edd930.jpg"]
+REFER_PICS = "https://graph.org/file/1a2e64aee3d4d10edd930.jpg"
 PAYPICS = ["https://ibb.co/YBSqKK3J"] #["https://graph.org/file/f4db1c3ad3d9e38b328e6.jpg"]
 #SUBSCRIPTION = "https://ibb.co/1fwc90Pp"
 SUBSCRIPTION="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExb2trajF5eThxN2h5d2kzaXl6aTZ5MWhpbWEya2doNjBnbGtvMnZiYiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/PnoQLaOLYp93ebw382/giphy.gif"#
