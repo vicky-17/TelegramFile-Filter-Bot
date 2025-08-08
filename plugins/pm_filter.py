@@ -222,13 +222,29 @@ async def refercall(bot, query):
         [InlineKeyboardButton("• ᴄʟᴏsᴇ •", callback_data="close_data")],
     ]
     reply_markup = InlineKeyboardMarkup(btn)
-    await bot.send_photo(
-        chat_id=query.message.chat.id,
-        photo=REFER_PICS,
-        caption=f"Hey Your refer link:\n\nClick on the Linkto copy.\n <code>https://telegram.dog/{bot.me.username}?start=reff_{query.from_user.id}</code>\n\nShare this link with your friends, Each time they join, you will get 10 referral points and after 100 points you will get 1 month premium subscription.",
-        reply_markup=reply_markup,
-        parse_mode=enums.ParseMode.HTML,
+
+    caption = (
+        f"👋 Hey {query.from_user.mention},\n\n"
+        f"Hᴇʀᴇ ɪꜱ ʏᴏᴜʀ ʀᴇғғᴇʀᴀʟ ʟɪɴᴋ:\n"
+        f"<blockquote>🍁<b>(Click To Copy)</b>👇</blockquote>\n"
+        f"🔗 <code>https://telegram.dog/{bot.me.username}?start=reff_{query.from_user.id}</code>\n\n"
+        f"♻️ Sʜᴀʀᴇ ᴛʜɪꜱ ʟɪɴᴋ ᴡɪᴛʜ ʏᴏᴜʀ ғʀɪᴇɴᴅꜱ, Eᴀᴄʜ ᴛɪᴍᴇ ᴛʜᴇʏ ɪᴏɪɴ,  ʏᴏᴜ ᴡɪʟʟ ɢᴇᴛ 𝟷𝟶 ʀᴇғғᴇʀᴀʟ ᴘᴏɪɴᴛꜱ ᴀɴᴅ ᴀғᴛᴇʀ 𝟷𝟶𝟶 ᴘᴏɪɴᴛꜱ ʏᴏᴜ ᴡɪʟʟ ɢᴇᴛ 𝟷 ᴍᴏɴᴛʜ ᴘʀᴇᴍɪᴜᴍ ꜱᴜʙꜱᴄʀɪᴘᴛɪᴏɴ."
     )
+
+    try:
+        await bot.edit_message_media(
+            chat_id=query.message.chat.id,
+            message_id=query.message.id,
+            media=InputMediaPhoto(
+                media=REFER_PICS,
+                caption=caption,
+                parse_mode=enums.ParseMode.HTML,
+            ),
+            reply_markup=reply_markup,
+        )
+    except Exception as e:
+        print("Error in Refercall:", e)
+
     await query.answer()
 
 
@@ -1402,39 +1418,56 @@ async def cb_handler(client: Client, query: CallbackQuery):
             return
 
     elif query.data.startswith("stream"):
-        user_id = query.from_user.id
-        file_id = query.data.split("#", 1)[1]
-        log_msg = await client.send_cached_media(chat_id=LOG_CHANNEL, file_id=file_id)
-        fileName = quote_plus(get_name(log_msg))
-        online = f"{URL}watch/{log_msg.id}/{fileName}?hash={get_hash(log_msg)}"
-        download = f"{URL}{log_msg.id}/{fileName}?hash={get_hash(log_msg)}"
-        btn = [
-            [
-                InlineKeyboardButton(
-                    "🧿 ꜱᴛʀᴇᴀᴍ ᴏɴ ᴡᴇʙ 🖥", web_app=WebAppInfo(url=online)
-                )
-            ],
-            [
-                InlineKeyboardButton("ᴡᴀᴛᴄʜ ᴏɴʟɪɴᴇ", url=online),
-                InlineKeyboardButton("ꜰᴀꜱᴛ ᴅᴏᴡɴʟᴏᴀᴅ", url=download),
-            ],
-            [InlineKeyboardButton("✗ ᴄʟᴏsᴇ ✗", callback_data="close_data")],
-        ]
-        await query.edit_message_reply_markup(reply_markup=InlineKeyboardMarkup(btn))
-        username = query.from_user.username
-        await log_msg.reply_text(
-            text=f"#LinkGenrated\n\nIᴅ : <code>{user_id}</code>\nUꜱᴇʀɴᴀᴍᴇ : {username}\n\nNᴀᴍᴇ : {fileName}",
-            quote=True,
-            disable_web_page_preview=True,
-            reply_markup=InlineKeyboardMarkup(
+        try:
+            user_id = query.from_user.id
+            file_id = query.data.split("#", 1)[1]
+            print(f"📥 Callback Triggered for file_id: {file_id}")
+
+            log_msg = await client.send_cached_media(chat_id=LOG_CHANNEL, file_id=file_id)
+            print(f"✅ File sent to log: message_id={log_msg.id if log_msg else 'None'}")
+
+            fileName = quote_plus(get_name(log_msg))
+            print(f"📁 Filename: {fileName}")
+
+            online = f"{URL}watch/{log_msg.id}/{fileName}?hash={get_hash(log_msg)}"
+            download = f"{URL}{log_msg.id}/{fileName}?hash={get_hash(log_msg)}"
+
+            print(f"🌐 Online URL: {online}")
+            print(f"⬇️ Download URL: {download}")
+
+            btn = [
+                [InlineKeyboardButton("🧿 ꜱᴛʀᴇᴀᴍ ᴏɴ ᴡᴇʙ 🖥", web_app=WebAppInfo(url=online))],
                 [
+                    InlineKeyboardButton("ᴡᴀᴛᴄʜ ᴏɴʟɪɴᴇ", url=online),
+                    InlineKeyboardButton("ꜰᴀꜱᴛ ᴅᴏᴡɴʟᴏᴀᴅ", url=download),
+                ],
+                [InlineKeyboardButton("✗ ᴄʟᴏsᴇ ✗", callback_data="close_data")],
+            ]
+            await query.edit_message_reply_markup(reply_markup=InlineKeyboardMarkup(btn))
+
+            username = query.from_user.username or "Unknown"
+            await log_msg.reply_text(
+                text=(
+                    f"#LinkGenrated\n\n"
+                    f"Iᴅ : <code>{user_id}</code>\n"
+                    f"Uꜱᴇʀɴᴀᴍᴇ : @{username}\n\n"
+                    f"Nᴀᴍᴇ : {fileName}"
+                ),
+                quote=True,
+                disable_web_page_preview=True,
+                reply_markup=InlineKeyboardMarkup([
                     [
                         InlineKeyboardButton("🚀 ꜰᴀꜱᴛ ᴅᴏᴡɴʟᴏᴀᴅ", url=download),
                         InlineKeyboardButton("ᴡᴀᴛᴄʜ ᴏɴʟɪɴᴇ 🧿", url=online),
                     ]
-                ]
-            ),
-        )
+                ]),
+            )
+        except Exception as e:
+            import traceback
+            print("❌ Error in stream callback:")
+            traceback.print_exc()  # prints full traceback
+            await query.answer("⚠️ Failed to generate link. Try again later.", show_alert=True)
+
 
     elif query.data == "buttons":
         await query.answer("ɴᴏ ᴍᴏʀᴇ ᴘᴀɢᴇs 😊", show_alert=True)
