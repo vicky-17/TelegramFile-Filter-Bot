@@ -17,8 +17,8 @@ def is_enabled(value, default):
 SESSION = "Media_search"
 API_ID = 23884743
 API_HASH = "b8c26efa0bc0e98f306094ca676165d2"
-#BOT_TOKEN ="8216289057:AAF-ciONTLn3fjMBrAM3wS_NYOu4Y5gPfoE" #Backup bot @FilmyswapMoviesBot
-BOT_TOKEN="6440636978:AAEZWjxQFM0ul9_-jGJ50ogZJhp-aKPqzhQ"
+#BOT_TOKEN ="8216289057:AAHiy9tlzCU6pn6BlDW_z2EF2Hic-9XfjuA" #Backup bot @FilmyswapMoviesBot
+BOT_TOKEN="6440636978:AAFraVToOaW9YjdX9mtxnWxvRhPXE9ia2Uo"
 PORT = "8082"
 
 ADMINS = [6216066502]
