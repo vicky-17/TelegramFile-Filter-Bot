@@ -229,14 +229,63 @@ async def get_imdb(file_name):
         return {}
 
 
+import os
+
+TMDB_API_KEY = os.getenv("TMDB_API_KEY")  # put your TMDB key in env var
+
 async def fetch_movie_poster(title: str, year: Optional[int] = None) -> Optional[str]:
-    async with aiohttp.ClientSession() as session:
-        query = title.strip().replace(" ", "+")
-        url = f"https://jisshuapis.vercel.app/api.php?query={query}"
+    """
+    Try fetching a poster in this order:
+    1. TMDB API (The Movie Database)
+    2. IMDb API (via your existing get_poster function)
+    3. Jisshu API (existing code)
+    """
+    query = title.strip()
+    if not query:
+        return None
+
+    # --------------------
+    # 1) Try TMDB
+    # --------------------
+    if TMDB_API_KEY:
         try:
-            async with session.get(url, timeout=aiohttp.ClientTimeout(total=5)) as res:
+            async with aiohttp.ClientSession() as session:
+                tmdb_url = (
+                    f"https://api.themoviedb.org/3/search/multi"
+                    f"?api_key={TMDB_API_KEY}"
+                    f"&query={query}"
+                    f"&year={year or ''}"
+                )
+                async with session.get(tmdb_url, timeout=aiohttp.ClientTimeout(total=5)) as res:
+                    if res.status == 200:
+                        data = await res.json()
+                        results = data.get("results") or []
+                        if results:
+                            poster_path = results[0].get("poster_path")
+                            if poster_path:
+                                return f"https://image.tmdb.org/t/p/w500{poster_path}"
+        except Exception as e:
+            print(f"TMDB fetch error: {e}")
+
+    # --------------------
+    # 2) Try IMDb (your existing get_poster)
+    # --------------------
+    try:
+        imdb = await get_poster(query)
+        if imdb and imdb.get("poster"):
+            return imdb["poster"]
+    except Exception as e:
+        print(f"IMDb fetch error: {e}")
+
+    # --------------------
+    # 3) Try Jisshu API (existing fallback)
+    # --------------------
+    try:
+        async with aiohttp.ClientSession() as session:
+            jisshu_url = f"https://jisshuapis.vercel.app/api.php?query={query.replace(' ', '+')}"
+            async with session.get(jisshu_url, timeout=aiohttp.ClientTimeout(total=5)) as res:
                 if res.status != 200:
-                    print(f"API Error: HTTP {res.status}")
+                    print(f"Jisshu API Error: HTTP {res.status}")
                     return None
                 data = await res.json()
 
@@ -246,17 +295,18 @@ async def fetch_movie_poster(title: str, year: Optional[int] = None) -> Optional
                         return posters[0]
 
                 print(f"No Poster Found in jisshu-2/3/4 for Title: {title}")
-                return None
+    except aiohttp.ClientError as e:
+        print(f"Jisshu API Network Error: {e}")
+    except asyncio.TimeoutError:
+        print("Jisshu API Request Timed Out")
+    except Exception as e:
+        print(f"Jisshu API Unexpected Error: {e}")
 
-        except aiohttp.ClientError as e:
-            print(f"Network Error: {e}")
-            return None
-        except asyncio.TimeoutError:
-            print("Request Timed Out")
-            return None
-        except Exception as e:
-            print(f"Unexpected Error: {e}")
-            return None
+    # --------------------
+    # Nothing worked
+    # --------------------
+    return None
+
 
 
 def generate_unique_id(movie_name):
@@ -336,4 +386,5 @@ def format_file_size(size_bytes):
             return f"{size_bytes:.2f} {unit}"
         size_bytes /= 1024
     return f"{size_bytes:.2f} PB"
+
 
