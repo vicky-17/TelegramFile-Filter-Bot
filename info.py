@@ -26,7 +26,7 @@ OWNER_USERNAME = "Deb01admin" # only username
 USERNAME = "Deb01admin" # only username
 CONTACT_OWNER="https://t.me/Contact_Vicky_via_bot" # full link to contact user
 
-CHANNELS = []
+CHANNELS = [-1002283940185,-1002577380408,-1002653919386]
 AUTH_CHANNEL = -1002575243889
 AUTH_REQ_CHANNEL = -1002575243889
 LOG_CHANNEL = -1002681917761
