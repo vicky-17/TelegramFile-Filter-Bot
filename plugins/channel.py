@@ -1,5 +1,4 @@
 # channel.py
-# --| This code created by: Jisshu_bots & SilentXBotz |--#
 import re
 import hashlib
 import asyncio
@@ -11,6 +10,8 @@ from database.ia_filterdb import save_file, unpack_new_file_id
 import aiohttp
 from typing import Optional
 from collections import defaultdict
+from PIL import Image
+import os
 
 CAPTION_LANGUAGES = [
     "Bhojpuri",
@@ -50,7 +51,8 @@ UPDATE_CAPTION = """<b>𝖭𝖤𝖶 {} 𝖠𝖣𝖣𝖤𝖣 ✅</b>
 <b>✨ Telegram Files ✨</b>
 
 {}
-"""
+
+<blockquote>〽️ Powered by @Jisshu_bots</b></blockquote>"""
 
 QUALITY_CAPTION = """📦 {} : {}\n"""
 
@@ -61,6 +63,42 @@ processing_movies = set()
 
 media_filter = filters.document | filters.video | filters.audio
 
+async def extract_thumbnail(client, media, chat_id):
+    """Extract and resize a thumbnail from a video file."""
+    try:
+        if media.thumbs:
+            thumb_path = await client.download_media(media.thumbs[0].file_id)
+            img = Image.open(thumb_path)
+            img = img.resize((1920, 1080), Image.LANCZOS)
+            resized_thumb_path = f"thumb_{media.file_id}.jpg"
+            img.save(resized_thumb_path)
+            os.remove(thumb_path)
+            return resized_thumb_path
+        return None
+    except Exception as e:
+        print(f"Error extracting thumbnail: {e}")
+        return None
+
+async def fetch_tmdb_poster(title: str, year: Optional[int] = None) -> Optional[str]:
+    """Fetch movie poster from TMDB API."""
+    async with aiohttp.ClientSession() as session:
+        query = title.strip().replace(" ", "+")
+        url = f"https://api.themoviedb.org/3/search/movie?api_key={TMDB_API_KEY}&query={query}"
+        if year:
+            url += f"&year={year}"
+        try:
+            async with session.get(url, timeout=aiohttp.ClientTimeout(total=5)) as res:
+                if res.status != 200:
+                    print(f"TMDB API Error: HTTP {res.status}")
+                    return None
+                data = await res.json()
+                results = data.get("results", [])
+                if results and results[0].get("poster_path"):
+                    return f"https://image.tmdb.org/t/p/original{results[0]['poster_path']}"
+                return None
+        except Exception as e:
+            print(f"TMDB fetch error: {e}")
+            return None
 
 @Client.on_message(filters.chat(CHANNELS) & media_filter)
 async def media(bot, message):
@@ -73,7 +111,6 @@ async def media(bot, message):
         if success_sts == "suc" and await db.get_send_movie_update_status(bot_id):
             file_id, file_ref = unpack_new_file_id(media.file_id)
             await queue_movie_file(bot, media)
-
 
 async def queue_movie_file(bot, media):
     try:
@@ -136,10 +173,18 @@ async def send_movie_update(bot, file_name, files):
         title = imdb_data.get("title", file_name)
         year_match = re.search(r"\b(19|20)\d{2}\b", file_name)
         year = year_match.group(0) if year_match else None
-        poster = await fetch_movie_poster(title, files[0]["year"])
+        # Try TMDB first, then Jisshu API, then thumbnail extraction
+        poster = await fetch_tmdb_poster(title, year)
+        if not poster:
+            poster = await fetch_movie_poster(title, year)
+        if not poster and files[0]["file_id"]:
+            # Extract thumbnail from the first video file
+            media = await bot.get_messages(CHANNELS[0], files[0]["file_id"])
+            if media.video:
+                poster = await extract_thumbnail(bot, media.video, CHANNELS[0])
         kind = imdb_data.get("kind", "").strip().upper().replace(" ", "_") if imdb_data else ""
         if kind == "TV_SERIES":
-           kind = "SERIES"
+            kind = "SERIES"
         languages = set()
         for file in files:
             if file["language"] != "Not Idea":
@@ -196,21 +241,25 @@ async def send_movie_update(bot, file_name, files):
                 line = f"📦 {quality} : " + " | ".join(links)
                 quality_text += line + "\n"
 
-        image_url = poster or "https://te.legra.ph/file/88d845b4f8a024a71465d.jpg"
-        full_caption = UPDATE_CAPTION.format(kind, title, year, files[0]['quality'], language, quality_text)
+        if not poster:
+            # If no poster or thumbnail is available, skip sending the photo
+            return
 
         movie_update_channel = await db.movies_update_channel_id()
         await bot.send_photo(
             chat_id=movie_update_channel if movie_update_channel else MOVIE_UPDATE_CHANNEL,
-            photo=image_url,
-            caption=full_caption,
+            photo=poster,
+            caption=UPDATE_CAPTION.format(kind, title, year, files[0]['quality'], language, quality_text),
             parse_mode=enums.ParseMode.HTML
         )
+
+        # Clean up thumbnail file if it was created
+        if poster and os.path.exists(poster):
+            os.remove(poster)
 
     except Exception as e:
         print('Failed to send movie update. Error - ', e)
         await bot.send_message(LOG_CHANNEL, f"Failed to send movie update. Error - {e}'\n\n<blockquote>If you don’t understand this error, you can ask in our support group: @Jisshu_support.</blockquote>")
-
 
 async def get_imdb(file_name):
     try:
@@ -228,64 +277,14 @@ async def get_imdb(file_name):
         print(f"IMDB fetch error: {e}")
         return {}
 
-
-import os
-
-TMDB_API_KEY = os.getenv("TMDB_API_KEY")  # put your TMDB key in env var
-
 async def fetch_movie_poster(title: str, year: Optional[int] = None) -> Optional[str]:
-    """
-    Try fetching a poster in this order:
-    1. TMDB API (The Movie Database)
-    2. IMDb API (via your existing get_poster function)
-    3. Jisshu API (existing code)
-    """
-    query = title.strip()
-    if not query:
-        return None
-
-    # --------------------
-    # 1) Try TMDB
-    # --------------------
-    if TMDB_API_KEY:
+    async with aiohttp.ClientSession() as session:
+        query = title.strip().replace(" ", "+")
+        url = f"https://jisshuapis.vercel.app/api.php?query={query}"
         try:
-            async with aiohttp.ClientSession() as session:
-                tmdb_url = (
-                    f"https://api.themoviedb.org/3/search/multi"
-                    f"?api_key={TMDB_API_KEY}"
-                    f"&query={query}"
-                    f"&year={year or ''}"
-                )
-                async with session.get(tmdb_url, timeout=aiohttp.ClientTimeout(total=5)) as res:
-                    if res.status == 200:
-                        data = await res.json()
-                        results = data.get("results") or []
-                        if results:
-                            poster_path = results[0].get("poster_path")
-                            if poster_path:
-                                return f"https://image.tmdb.org/t/p/w500{poster_path}"
-        except Exception as e:
-            print(f"TMDB fetch error: {e}")
-
-    # --------------------
-    # 2) Try IMDb (your existing get_poster)
-    # --------------------
-    try:
-        imdb = await get_poster(query)
-        if imdb and imdb.get("poster"):
-            return imdb["poster"]
-    except Exception as e:
-        print(f"IMDb fetch error: {e}")
-
-    # --------------------
-    # 3) Try Jisshu API (existing fallback)
-    # --------------------
-    try:
-        async with aiohttp.ClientSession() as session:
-            jisshu_url = f"https://jisshuapis.vercel.app/api.php?query={query.replace(' ', '+')}"
-            async with session.get(jisshu_url, timeout=aiohttp.ClientTimeout(total=5)) as res:
+            async with session.get(url, timeout=aiohttp.ClientTimeout(total=5)) as res:
                 if res.status != 200:
-                    print(f"Jisshu API Error: HTTP {res.status}")
+                    print(f"API Error: HTTP {res.status}")
                     return None
                 data = await res.json()
 
@@ -295,23 +294,20 @@ async def fetch_movie_poster(title: str, year: Optional[int] = None) -> Optional
                         return posters[0]
 
                 print(f"No Poster Found in jisshu-2/3/4 for Title: {title}")
-    except aiohttp.ClientError as e:
-        print(f"Jisshu API Network Error: {e}")
-    except asyncio.TimeoutError:
-        print("Jisshu API Request Timed Out")
-    except Exception as e:
-        print(f"Jisshu API Unexpected Error: {e}")
+                return None
 
-    # --------------------
-    # Nothing worked
-    # --------------------
-    return None
-
-
+        except aiohttp.ClientError as e:
+            print(f"Network Error: {e}")
+            return None
+        except asyncio.TimeoutError:
+            print("Request Timed Out")
+            return None
+        except Exception as e:
+            print(f"Unexpected Error: {e}")
+            return None
 
 def generate_unique_id(movie_name):
     return hashlib.md5(movie_name.encode("utf-8")).hexdigest()[:5]
-
 
 async def get_qualities(text):
     qualities = [
@@ -343,7 +339,6 @@ async def get_qualities(text):
     found_qualities = [q for q in qualities if q.lower() in text.lower()]
     return ", ".join(found_qualities) or "HDRip"
 
-
 async def Jisshu_qualities(text, file_name):
     qualities = ["480p", "720p", "720p HEVC", "1080p", "1080p HEVC", "2160p"]
     combined_text = (text.lower() + " " + file_name.lower()).strip()
@@ -355,7 +350,6 @@ async def Jisshu_qualities(text, file_name):
         if "HEVC" not in quality and quality.lower() in combined_text:
             return quality
     return "720p"
-
 
 async def movie_name_format(file_name):
     filename = re.sub(
@@ -379,12 +373,9 @@ async def movie_name_format(file_name):
     ).strip()
     return filename
 
-
 def format_file_size(size_bytes):
     for unit in ["B", "KB", "MB", "GB", "TB"]:
         if size_bytes < 1024:
             return f"{size_bytes:.2f} {unit}"
         size_bytes /= 1024
     return f"{size_bytes:.2f} PB"
-
-
