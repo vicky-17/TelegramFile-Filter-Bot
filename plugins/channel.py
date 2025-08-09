@@ -1,4 +1,5 @@
 # channel.py
+# --| This code created by: Jisshu_bots & SilentXBotz |--#
 import re
 import hashlib
 import asyncio
@@ -63,8 +64,8 @@ processing_movies = set()
 
 media_filter = filters.document | filters.video | filters.audio
 
-async def extract_thumbnail(client, media, chat_id):
-    """Extract and resize a thumbnail from a video file."""
+async def extract_thumbnail(client, media):
+    """Extract and resize a thumbnail from a video or document file."""
     try:
         if media.thumbs:
             thumb_path = await client.download_media(media.thumbs[0].file_id)
@@ -110,12 +111,13 @@ async def media(bot, message):
         success_sts = await save_file(media)
         if success_sts == "suc" and await db.get_send_movie_update_status(bot_id):
             file_id, file_ref = unpack_new_file_id(media.file_id)
-            await queue_movie_file(bot, media)
+            await queue_movie_file(bot, message)
 
-async def queue_movie_file(bot, media):
+async def queue_movie_file(bot, message):
     try:
+        media = message.document or message.video or message.audio
         file_name = await movie_name_format(media.file_name)
-        caption = await movie_name_format(media.caption)
+        caption = await movie_name_format(message.caption)
         year_match = re.search(r"\b(19|20)\d{2}\b", caption)
         year = year_match.group(0) if year_match else None
         season_match = re.search(r"(?i)(?:s|season)0*(\d{1,2})", caption) or re.search(
@@ -145,6 +147,8 @@ async def queue_movie_file(bot, media):
                 "caption": caption,
                 "language": language,
                 "year": year,
+                "chat_id": message.chat.id,
+                "message_id": message.id,
             }
         )
         if file_name in processing_movies:
@@ -173,15 +177,20 @@ async def send_movie_update(bot, file_name, files):
         title = imdb_data.get("title", file_name)
         year_match = re.search(r"\b(19|20)\d{2}\b", file_name)
         year = year_match.group(0) if year_match else None
-        # Try TMDB first, then Jisshu API, then thumbnail extraction
+        # Try TMDB first, then Jisshu API
         poster = await fetch_tmdb_poster(title, year)
         if not poster:
             poster = await fetch_movie_poster(title, year)
-        if not poster and files[0]["file_id"]:
-            # Extract thumbnail from the first video file
-            media = await bot.get_messages(CHANNELS[0], files[0]["file_id"])
-            if media.video:
-                poster = await extract_thumbnail(bot, media.video, CHANNELS[0])
+        if not poster:
+            # Extract thumbnail from the first file if APIs fail
+            file = files[0]
+            try:
+                media_msg = await bot.get_messages(file["chat_id"], file["message_id"])
+                media = media_msg.document or media_msg.video
+                if media:
+                    poster = await extract_thumbnail(bot, media)
+            except Exception as e:
+                print(f"Error retrieving message for thumbnail: {e}")
         kind = imdb_data.get("kind", "").strip().upper().replace(" ", "_") if imdb_data else ""
         if kind == "TV_SERIES":
             kind = "SERIES"
@@ -242,18 +251,20 @@ async def send_movie_update(bot, file_name, files):
                 quality_text += line + "\n"
 
         if not poster:
-            # If no poster or thumbnail is available, skip sending the photo
+            # If no poster or thumbnail, skip sending
             return
+
+        full_caption = UPDATE_CAPTION.format(kind, title, year or "", files[0]['quality'], language, quality_text)
 
         movie_update_channel = await db.movies_update_channel_id()
         await bot.send_photo(
             chat_id=movie_update_channel if movie_update_channel else MOVIE_UPDATE_CHANNEL,
             photo=poster,
-            caption=UPDATE_CAPTION.format(kind, title, year, files[0]['quality'], language, quality_text),
-            parse_mode=enums.ParseMode.HTML
+            caption=full_caption,
+            parse_mode="HTML"
         )
 
-        # Clean up thumbnail file if it was created
+        # Clean up if poster is a local file
         if poster and os.path.exists(poster):
             os.remove(poster)
 
