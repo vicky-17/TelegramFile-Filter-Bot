@@ -50,8 +50,7 @@ UPDATE_CAPTION = """<b>𝖭𝖤𝖶 {} 𝖠𝖣𝖣𝖤𝖣 ✅</b>
 <b>✨ Telegram Files ✨</b>
 
 {}
-
-<blockquote>〽️ Powered by @Jisshu_bots</b></blockquote>"""
+"""
 
 QUALITY_CAPTION = """📦 {} : {}\n"""
 
@@ -337,3 +336,4 @@ def format_file_size(size_bytes):
             return f"{size_bytes:.2f} {unit}"
         size_bytes /= 1024
     return f"{size_bytes:.2f} PB"
+
